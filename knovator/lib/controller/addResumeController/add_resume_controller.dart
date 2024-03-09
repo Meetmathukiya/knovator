@@ -3,6 +3,9 @@ import 'package:get/get.dart';
 import 'package:get/get_rx/get_rx.dart';
 
 import '../../model/educationDetailsModel/edu_details_model.dart';
+import '../../model/languageModel/language_model.dart';
+import '../../model/resumeViewModel/resume_view_model.dart';
+import '../../model/skillModel/skill_model.dart';
 import '../../model/workExperienceModel/work_exp_model.dart';
 
 class AddResumeController extends GetxController {
@@ -23,8 +26,39 @@ class AddResumeController extends GetxController {
   RxBool isFresher = false.obs;
 
   //skill
-  TextEditingController skillController = TextEditingController();
+  List<SkillDetails> skillDetailsList = [];
 
   //language
-  TextEditingController languageController = TextEditingController();
+  List<LanguageDetails> languageDetailsList = [];
+
+  //resume view
+  RxList<ResumeViewDetails> resumeList =<ResumeViewDetails> [].obs;
+
+  RxBool isEdit = false.obs;
+  int selectedIndex = -1;
+  fillData(int index) {
+    nameController = resumeList[index].nameController;
+    phoneController = resumeList[index].phoneController;
+    emailController = resumeList[index].emailController;
+    addressController = resumeList[index].addressController;
+    summaryController = resumeList[index].summaryController;
+    educationDetailsList = resumeList[index].educationDetailsList;
+    workExperinceList = resumeList[index].workExperinceList;
+    isFresher = resumeList[index].isFresher;
+    skillDetailsList = resumeList[index].skillDetailsList;
+    languageDetailsList = resumeList[index].languageDetailsList;
+  }
+
+  clearData() {
+    nameController.clear();
+    phoneController.clear();
+    emailController.clear();
+    addressController.clear();
+    summaryController.clear();
+    educationDetailsList.clear();
+    workExperinceList.clear();
+    isFresher.value = false;
+    skillDetailsList.clear();
+    languageDetailsList.clear();
+  }
 }

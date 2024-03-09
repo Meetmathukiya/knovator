@@ -1,15 +1,25 @@
+import 'dart:convert';
+import 'dart:developer';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:knovator/controller/addResumeController/add_resume_controller.dart';
 import 'package:knovator/model/educationDetailsModel/edu_details_model.dart';
+import 'package:knovator/model/languageModel/language_model.dart';
+import 'package:knovator/model/resumeViewModel/resume_view_model.dart';
 import 'package:knovator/model/workExperienceModel/work_exp_model.dart';
+import 'package:knovator/screen/addResumeScreen/screenwidget/educationalDetails.dart';
+import 'package:knovator/screen/addResumeScreen/screenwidget/work_exp.dart';
 import 'package:knovator/utils/const/app_colors.dart';
 import 'package:knovator/widget/appbar.dart';
+import 'package:knovator/widget/button.dart';
 import 'package:knovator/widget/text_edit_field.dart';
 import 'package:knovator/widget/text_widget.dart';
 
+import '../../model/skillModel/skill_model.dart';
 import '../../utils/helper/helper.dart';
 import '../../widget/date_picker.dart';
 
@@ -24,12 +34,22 @@ class _AddResumeScreenState extends State<AddResumeScreen> {
   AddResumeController addResumeController = Get.put(AddResumeController());
   @override
   void initState() {
-    addResumeController.educationDetailsList.add(EducationDetails(
-        schoolName: TextEditingController(),
-        graduationDate: TextEditingController(),
-        percent: TextEditingController()));
+    if (addResumeController.isEdit.value == false) {
+      addResumeController.educationDetailsList.add(EducationDetails(
+          schoolName: TextEditingController(),
+          graduationDate: TextEditingController(),
+          percent: TextEditingController()));
+      addResumeController.workExperinceList.add(WorkExpDetails(
+          jobTitleController: TextEditingController(),
+          comapnyNameController: TextEditingController(),
+          dateOfJoinController: TextEditingController(),
+          isCurrentlyWorking: false,
+          dateOfResignController: TextEditingController()));
+    } else {}
     super.initState();
   }
+
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
@@ -41,118 +61,147 @@ class _AddResumeScreenState extends State<AddResumeScreen> {
           child: Padding(
               padding: const EdgeInsets.all(4.0),
               child: Obx(
-                () => Column(
-                  children: [
-                    Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const TextWidget(
-                              text: "Personal Details",
-                              textSize: 16,
-                            ),
-                            const SizedBox(height: 8),
-                            TextEditField.textField(
-                                hintText: "Enter Name",
-                                controller: addResumeController.nameController),
-                            const SizedBox(height: 8),
-                            TextEditField.textField(
-                                hintText: "Enter Phone",
-                                textInputType: TextInputType.phone,
-                                controller:
-                                    addResumeController.phoneController),
-                            const SizedBox(height: 8),
-                            TextEditField.textField(
-                                hintText: "Enter Email",
-                                textInputType: TextInputType.emailAddress,
-                                controller:
-                                    addResumeController.emailController),
-                            const SizedBox(height: 8),
-                            TextEditField.textField(
-                                hintText: "Enter Address",
-                                textInputType: TextInputType.emailAddress,
-                                controller:
-                                    addResumeController.addressController),
-                          ],
+                () => Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const TextWidget(
+                                text: "Personal Details",
+                                textSize: 16,
+                              ),
+                              const SizedBox(height: 8),
+                              TextEditField.textField(
+                                  hintText: "Enter Name",
+                                  valText: "Please Enter Name",
+                                  controller:
+                                      addResumeController.nameController),
+                              const SizedBox(height: 8),
+                              TextEditField.textField(
+                                  hintText: "Enter Phone",
+                                  valText: "Please Enter Phone",
+                                  textInputType: TextInputType.phone,
+                                  controller:
+                                      addResumeController.phoneController),
+                              const SizedBox(height: 8),
+                              TextEditField.textField(
+                                  hintText: "Enter Email",
+                                  valText: "Please Enter Email",
+                                  textInputType: TextInputType.emailAddress,
+                                  controller:
+                                      addResumeController.emailController),
+                              const SizedBox(height: 8),
+                              TextEditField.textField(
+                                  hintText: "Enter Address",
+                                  textInputType: TextInputType.emailAddress,
+                                  controller:
+                                      addResumeController.addressController),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                    Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const TextWidget(
-                              text: "Summary",
-                              textSize: 16,
-                            ),
-                            const SizedBox(height: 8),
-                            TextEditField.textField(
-                                hintText: "Write About Yourself/Summary",
-                                maxLine: 3,
-                                controller:
-                                    addResumeController.summaryController),
-                          ],
+                      Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const TextWidget(
+                                text: "Summary",
+                                textSize: 16,
+                              ),
+                              const SizedBox(height: 8),
+                              TextEditField.textField(
+                                  hintText: "Write About Yourself/Summary",
+                                  maxLine: 3,
+                                  controller:
+                                      addResumeController.summaryController),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                    Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const TextWidget(
-                                  text: "Educational Details",
-                                  textSize: 16,
-                                ),
-                                InkWell(
-                                    onTap: () {
-                                      addResumeController.educationDetailsList
-                                          .add(EducationDetails(
-                                              schoolName:
-                                                  TextEditingController(),
-                                              graduationDate:
-                                                  TextEditingController(),
-                                              percent:
-                                                  TextEditingController()));
-                                      setState(() {});
-                                    },
-                                    child: Icon(Icons.add_circle_outline))
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            ListView.separated(
-                              itemCount: addResumeController
-                                  .educationDetailsList.length,
-                              physics: NeverScrollableScrollPhysics(),
-                              shrinkWrap: true,
-                              separatorBuilder: (context, index) {
-                                return Divider();
-                              },
-                              itemBuilder: (BuildContext context, int index) {
-                                return Column(
-                                  children: [
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
+                      const EductionalDetailsWidget(),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          const TextWidget(text: "I'm Fresher", textSize: 16),
+                          const SizedBox(width: 8),
+                          Checkbox(
+                              materialTapTargetSize:
+                                  MaterialTapTargetSize.shrinkWrap,
+                              visualDensity: VisualDensity.standard,
+                              value: addResumeController.isFresher.value,
+                              checkColor: AppColors.white,
+                              activeColor: AppColors.primaryColor,
+                              onChanged: (val) {
+                                addResumeController.isFresher.value = val!;
+                              }),
+                        ],
+                      ),
+                      if (!addResumeController.isFresher.value)
+                        const WorkExpWidget(),
+                      Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const TextWidget(
+                                    text: "Skill(s) Details",
+                                    textSize: 16,
+                                  ),
+                                  InkWell(
+                                      onTap: () {
+                                        addResumeController.skillDetailsList
+                                            .add(SkillDetails(
+                                          skillName: TextEditingController(),
+                                        ));
+                                        setState(() {});
+                                      },
+                                      child:
+                                          const Icon(Icons.add_circle_outline))
+                                ],
+                              ),
+                              if (addResumeController
+                                  .skillDetailsList.isNotEmpty)
+                                const SizedBox(height: 8),
+                              Wrap(
+                                alignment: WrapAlignment.start,
+                                direction: Axis.horizontal,
+                                runSpacing: 8,
+                                children: List.generate(
+                                  addResumeController.skillDetailsList.length,
+                                  (index) => SizedBox(
+                                    width: 160,
+                                    child: Row(
                                       children: [
-                                        TextWidget(
-                                            text: "${index + 1}", textSize: 15),
-                                        if (index > 0)
-                                          InkWell(
+                                        SizedBox(
+                                          width: 130,
+                                          child: TextEditField.textField(
+                                              hintText:
+                                                  "Enter Skill (${index + 1})",
+                                              controller: addResumeController
+                                                  .skillDetailsList[index]
+                                                  .skillName),
+                                        ),
+                                        SizedBox(
+                                          width: 20,
+                                          child: InkWell(
                                               onTap: () {
                                                 addResumeController
-                                                    .educationDetailsList
+                                                    .skillDetailsList
                                                     .removeAt(index);
                                                 setState(() {});
                                               },
@@ -160,216 +209,148 @@ class _AddResumeScreenState extends State<AddResumeScreen> {
                                                 Icons.close,
                                                 color: AppColors.redColors,
                                                 size: 22,
-                                              ))
+                                              )),
+                                        )
                                       ],
                                     ),
-                                    const SizedBox(height: 8),
-                                    TextEditField.textField(
-                                        hintText:
-                                            "Enter School/University Name",
-                                        controller: addResumeController
-                                            .educationDetailsList[index]
-                                            .schoolName),
-                                    const SizedBox(height: 8),
-                                    TextEditField.textField(
-                                        hintText: "Enter Graduation Date",
-                                        readOnly: true,
-                                        ontap: () {
-                                          datePickerEdu(index);
-                                        },
-                                        controller: addResumeController
-                                            .educationDetailsList[index]
-                                            .graduationDate),
-                                    const SizedBox(height: 8),
-                                    TextEditField.textField(
-                                        hintText: "Enter Percentage",
-                                        textInputType:
-                                            TextInputType.streetAddress,
-                                        controller: addResumeController
-                                            .educationDetailsList[index]
-                                            .percent),
-                                  ],
-                                );
-                              },
-                            ),
-                          ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        TextWidget(text: "I'm Fresher", textSize: 16),
-                        SizedBox(width: 8),
-                        Checkbox(
-                            materialTapTargetSize:
-                                MaterialTapTargetSize.shrinkWrap,
-                            visualDensity: VisualDensity.standard,
-                            value: addResumeController.isFresher.value,
-                            checkColor: AppColors.white,
-                            activeColor: AppColors.primaryColor,
-                            onChanged: (val) {
-                              addResumeController.isFresher.value = val!;
-                            }),
-                      ],
-                    ),
-                    if (!addResumeController.isFresher.value)
                       Card(
                         child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisSize: MainAxisSize.min,
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      const TextWidget(
-                                        text: "Work Experience",
-                                        textSize: 16,
-                                      ),
-                                      InkWell(
-                                          onTap: () {
-                                            addResumeController
-                                                .workExperinceList
-                                                .add(WorkExpDetails(
-                                                    jobTitleController:
-                                                        TextEditingController(),
-                                                    comapnyNameController:
-                                                        TextEditingController(),
-                                                    dateOfJoinController:
-                                                        TextEditingController(),
-                                                    isCurrentlyWorking: false,
-                                                    dateOfResignController:
-                                                        TextEditingController()));
-                                            setState(() {});
-                                          },
-                                          child: Icon(Icons.add_circle_outline))
-                                    ],
+                                  const TextWidget(
+                                    text: "Language(s)",
+                                    textSize: 16,
                                   ),
-                                  const SizedBox(height: 8),
-                                  ListView.separated(
-                                    itemCount: addResumeController
-                                        .workExperinceList.length,
-                                    physics: NeverScrollableScrollPhysics(),
-                                    shrinkWrap: true,
-                                    separatorBuilder: (context, index) {
-                                      return Divider();
-                                    },
-                                    itemBuilder:
-                                        (BuildContext context, int index) {
-                                      return Column(
-                                        children: [
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              TextWidget(
-                                                  text: "${index + 1}",
-                                                  textSize: 15),
-                                              if (index > 0)
-                                                InkWell(
-                                                    onTap: () {
-                                                      addResumeController
-                                                          .workExperinceList
-                                                          .removeAt(index);
-                                                      setState(() {});
-                                                    },
-                                                    child: const Icon(
-                                                      Icons.close,
-                                                      color:
-                                                          AppColors.redColors,
-                                                      size: 22,
-                                                    ))
-                                            ],
-                                          ),
-                                          const SizedBox(height: 8),
-                                          TextEditField.textField(
-                                              hintText: "Enter Job Title",
+                                  InkWell(
+                                      onTap: () {
+                                        addResumeController.languageDetailsList
+                                            .add(LanguageDetails(
+                                          language: TextEditingController(),
+                                        ));
+                                        setState(() {});
+                                      },
+                                      child:
+                                          const Icon(Icons.add_circle_outline))
+                                ],
+                              ),
+                              if (addResumeController
+                                  .languageDetailsList.isNotEmpty)
+                                const SizedBox(height: 8),
+                              Wrap(
+                                alignment: WrapAlignment.start,
+                                direction: Axis.horizontal,
+                                runSpacing: 8,
+                                children: List.generate(
+                                  addResumeController
+                                      .languageDetailsList.length,
+                                  (index) => SizedBox(
+                                    width: Get.width,
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                          child: TextEditField.textField(
+                                              hintText:
+                                                  "Enter Language (${index + 1})",
                                               controller: addResumeController
-                                                  .workExperinceList[index]
-                                                  .jobTitleController),
-                                          const SizedBox(height: 8),
-                                          TextEditField.textField(
-                                              hintText: "Enter Company Name",
-                                              controller: addResumeController
-                                                  .workExperinceList[index]
-                                                  .comapnyNameController),
-                                          Row(
-                                            children: [
-                                              TextWidget(
-                                                  text:
-                                                      "Currently Working Here",
-                                                  textSize: 16),
-                                              SizedBox(width: 8),
-                                              Checkbox(
-                                                  materialTapTargetSize:
-                                                      MaterialTapTargetSize
-                                                          .shrinkWrap,
-                                                  visualDensity:
-                                                      VisualDensity.standard,
-                                                  value: addResumeController
-                                                      .workExperinceList[index]
-                                                      .isCurrentlyWorking,
-                                                  checkColor: AppColors.white,
-                                                  activeColor:
-                                                      AppColors.primaryColor,
-                                                  onChanged: (val) {
-                                                    addResumeController
-                                                            .workExperinceList[
-                                                                index]
-                                                            .isCurrentlyWorking =
-                                                        val!;
-                                                    setState(() {});
-                                                  }),
-                                            ],
-                                          ),
-                                          Row(
-                                            children: [
-                                              Expanded(
-                                                child: TextEditField.textField(
-                                                    hintText: "Date Of Joining",
-                                                    readOnly: true,
-                                                    ontap: () {
-                                                      selectJoiningDate(index);
-                                                    },
-                                                    controller: addResumeController
-                                                        .workExperinceList[
-                                                            index]
-                                                        .dateOfJoinController),
-                                              ),
-                                              if (!addResumeController
-                                                  .workExperinceList[index]
-                                                  .isCurrentlyWorking)
-                                                const SizedBox(width: 8),
-                                              if (!addResumeController
-                                                  .workExperinceList[index]
-                                                  .isCurrentlyWorking)
-                                                Expanded(
-                                                  child:
-                                                      TextEditField.textField(
-                                                          hintText:
-                                                              "Date Of Resign",
-                                                          readOnly: true,
-                                                          ontap: () {
-                                                            selectResignDate(
-                                                                index);
-                                                          },
-                                                          controller: addResumeController
-                                                              .workExperinceList[
-                                                                  index]
-                                                              .dateOfResignController),
-                                                ),
-                                            ],
-                                          ),
-                                        ],
-                                      );
-                                    },
+                                                  .languageDetailsList[index]
+                                                  .language),
+                                        ),
+                                        InkWell(
+                                            onTap: () {
+                                              addResumeController
+                                                  .languageDetailsList
+                                                  .removeAt(index);
+                                              setState(() {});
+                                            },
+                                            child: const Icon(
+                                              Icons.close,
+                                              color: AppColors.redColors,
+                                              size: 22,
+                                            ))
+                                      ],
+                                    ),
                                   ),
-                                ])),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
-                  ],
+                      AppButton.primaryButton(
+                          onButtonPressed: () {
+                            if (_formKey.currentState!.validate()) {
+                              if (addResumeController.isEdit.value) {
+                                addResumeController.resumeList[
+                                    addResumeController
+                                        .selectedIndex] = ResumeViewDetails(
+                                    nameController:
+                                        addResumeController.nameController,
+                                    addressController:
+                                        addResumeController.addressController,
+                                    emailController:
+                                        addResumeController.emailController,
+                                    phoneController:
+                                        addResumeController.phoneController,
+                                    summaryController:
+                                        addResumeController.summaryController,
+                                    educationDetailsList: addResumeController
+                                        .educationDetailsList,
+                                    isFresher: addResumeController.isFresher,
+                                    workExperinceList:
+                                        addResumeController.workExperinceList,
+                                    languageDetailsList:
+                                        addResumeController.languageDetailsList,
+                                    skillDetailsList:
+                                        addResumeController.skillDetailsList);
+                                getStore.write('resume',
+                                    jsonEncode(addResumeController.resumeList));
+                              } else {
+                                ResumeViewDetails resumeViewDetails;
+                                resumeViewDetails = ResumeViewDetails(
+                                    nameController:
+                                        addResumeController.nameController,
+                                    addressController:
+                                        addResumeController.addressController,
+                                    emailController:
+                                        addResumeController.emailController,
+                                    phoneController:
+                                        addResumeController.phoneController,
+                                    summaryController:
+                                        addResumeController.summaryController,
+                                    educationDetailsList: addResumeController
+                                        .educationDetailsList,
+                                    isFresher: addResumeController.isFresher,
+                                    workExperinceList:
+                                        addResumeController.workExperinceList,
+                                    languageDetailsList:
+                                        addResumeController.languageDetailsList,
+                                    skillDetailsList:
+                                        addResumeController.skillDetailsList);
+
+                                addResumeController.resumeList.insert(
+                                    addResumeController.resumeList.length,
+                                    resumeViewDetails);
+                              }
+                              Get.back();
+                            }
+                          },
+                          title: "Submit")
+                    ],
+                  ),
                 ),
               )),
         ),
@@ -377,33 +358,5 @@ class _AddResumeScreenState extends State<AddResumeScreen> {
     );
   }
 
-  datePickerEdu(int index) async {
-    DateTime? date = await selectDate(
-      context,
-    );
-    if (date != null) {
-      addResumeController.educationDetailsList[index].graduationDate.text =
-          formatDate(date: date);
-    }
-  }
-
-  selectJoiningDate(int index) async {
-    DateTime? date = await selectDate(
-      context,
-    );
-    if (date != null) {
-      addResumeController.workExperinceList[index].dateOfJoinController.text =
-          formatDate(date: date);
-    }
-  }
-
-  selectResignDate(int index) async {
-    DateTime? date = await selectDate(
-      context,
-    );
-    if (date != null) {
-      addResumeController.workExperinceList[index].dateOfResignController.text =
-          formatDate(date: date);
-    }
-  }
+  static var getStore = GetStorage();
 }
