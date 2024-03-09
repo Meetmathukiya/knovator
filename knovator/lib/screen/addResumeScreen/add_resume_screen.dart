@@ -290,6 +290,7 @@ class _AddResumeScreenState extends State<AddResumeScreen> {
                           ),
                         ),
                       ),
+                      SizedBox(height: 8),
                       AppButton.primaryButton(
                           onButtonPressed: () {
                             if (_formKey.currentState!.validate()) {
@@ -316,8 +317,9 @@ class _AddResumeScreenState extends State<AddResumeScreen> {
                                         addResumeController.languageDetailsList,
                                     skillDetailsList:
                                         addResumeController.skillDetailsList);
+                                getStore.erase();
                                 getStore.write('resume',
-                                    jsonEncode(addResumeController.resumeList));
+                                    jsonEncode(addResumeController.resumeList.toString()));
                               } else {
                                 ResumeViewDetails resumeViewDetails;
                                 resumeViewDetails = ResumeViewDetails(
@@ -344,6 +346,9 @@ class _AddResumeScreenState extends State<AddResumeScreen> {
                                 addResumeController.resumeList.insert(
                                     addResumeController.resumeList.length,
                                     resumeViewDetails);
+                                getStore.erase();
+                                getStore.write('resume',
+                                    jsonEncode(addResumeController.resumeList.toString()));
                               }
                               Get.back();
                             }

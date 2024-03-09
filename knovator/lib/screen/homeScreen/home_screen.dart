@@ -80,6 +80,12 @@ class _HomeScreenState extends State<HomeScreen> {
                               });
                               break;
                             }
+                          case 2:
+                            {
+                              Get.to(() => ViewResumeScreen(index: index));
+
+                              break;
+                            }
                           case 1:
                             {
                               addResumeController.resumeList.removeAt(index);
@@ -89,6 +95,18 @@ class _HomeScreenState extends State<HomeScreen> {
                         }
                       },
                       itemBuilder: (context) => [
+                        const PopupMenuItem(
+                          height: 50,
+                          padding: EdgeInsets.all(0),
+                          value: 2,
+                          child: Center(
+                            child: TextWidget(
+                                text: "View",
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.black,
+                                textSize: 14),
+                          ),
+                        ),
                         const PopupMenuItem(
                           height: 50,
                           padding: EdgeInsets.all(0),
